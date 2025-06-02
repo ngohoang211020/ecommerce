@@ -19,7 +19,11 @@ class Database {
             })
         }
 
-        mongoose.connect(connectString).then(_ => {
+        mongoose.connect(connectString,
+            {
+                maxPoolSize:50
+            }
+        ).then(_ => {
             console.log('MongoDB connected successfully');
         }).catch((err) => {
             console.error('MongoDB connection error:', err);
