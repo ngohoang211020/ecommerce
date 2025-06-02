@@ -5,8 +5,8 @@
 const { Schema, model } = require("mongoose");
 
 //Declaration of the schema
-const DOCUMENT_NAME = 'Key';
-const COLLECTION_NAME = 'Keys';
+const DOCUMENT_NAME = "Key";
+const COLLECTION_NAME = "Keys";
 
 var keyTokenSchema = new Schema(
   {
@@ -16,6 +16,10 @@ var keyTokenSchema = new Schema(
       ref: "Shop",
     },
     publicKey: {
+      type: String,
+      required: true,
+    },
+    privateKey: {
       type: String,
       required: true,
     },
