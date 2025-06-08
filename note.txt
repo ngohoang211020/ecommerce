@@ -1,0 +1,11 @@
+package:
+
+Morgan package is a middleware for logging HTTP requests in an Express application
+
+The helmet package in Node.js is a middleware 
+for securing Express applications by setting various HTTP headers. 
+It helps protect your app from some common web vulnerabilities by configuring headers appropriately.
+Ngăn chặn bên thứ 3 đọc cookie bla bla
+
+The compression package in Node.js is middleware for compressing HTTP responses. 
+It uses Gzip or Brotli compression to reduce the size of the response body, which improves the performance of your application by reducing the amount of data sent over the network.
