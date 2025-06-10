@@ -1,7 +1,9 @@
 'use strict'
 
+const { UnauthorizedError,NotFoundError } = require('../core/error.response');
+const KeyStoreService = require('../services/keyToken.service');
 const JWT = require('jsonwebtoken');
-const { asyncHandler } = require('./checkAuth');
+const { asyncHandler } = require('../helpers/asyncHandler');
 const HEADER = {
     API_KEY: 'x-api-key',
     AUTHORIZATION: 'authorization',
@@ -39,19 +41,37 @@ const authentication = asyncHandler( async (req, res, next) => {
     // Check user in bds
     // Check keyStore with this userId
     // Ok all => return next()
-    const userId = req.headers[HEADER_CLIENT_ID]
+    const userId = req.headers[HEADER.CLIENT_ID]
     if(!userId) {
-        throw new AuthenticationError('Authentication Error')
+        throw new UnauthorizedError('Authentication Error')
     }
 
     //2 
-    const keyStore = await KeyStoreService.findByUserId(userId);
+    const keyStore = await KeyStoreService.findByUserId({userId});
     if(!keyStore) {
-        throw new AuthenticationError('Authentication Error')
+        throw new NotFoundError('KeyStore not found for this user')
     }
     
+    //3 
+    const accessToken = req.headers[HEADER.AUTHORIZATION];
+    if(!accessToken) {
+        throw new UnauthorizedError('Invalid Request')
+    }
+
+    try {
+        const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
+        if(decodeUser.user !== userId) {
+            throw new UnauthorizedError('Invalid User')
+        }
+        req.keyStore = keyStore;
+        return next();
+    } catch (catchError) {
+        throw catchError
+    }
+
 })
 
 module.exports = {
-    createTokenPair
+    createTokenPair,
+    authentication,
 }
