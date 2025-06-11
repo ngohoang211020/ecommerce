@@ -1,6 +1,6 @@
 "use strict";
 
-const { update } = require("lodash");
+const { update, find } = require("lodash");
 const keyTokenModel = require("../models/keytoken.model");
 const { Types, default: mongoose } = require("mongoose");
 class KeyTokenService {
@@ -39,9 +39,31 @@ static findByUserId = async ({userId}) => {
     return null;
   }
 };
+
+
   static removeKeyById = async (id) => {
     return await keyTokenModel.findByIdAndDelete(id)
   }
+
+static findByRefreshTokensUsed = async (refreshToken) => {
+  return await keyTokenModel.findOne({
+    refreshTokensUsed: refreshToken,
+  }).lean();
 }
 
+static findByRefreshToken = async (refreshToken) => {
+  return await keyTokenModel.findOne({
+    refreshToken: refreshToken,
+  }).lean();
+}
+
+static deleteByUserId = async (userId) => {
+  return await keyTokenModel.deleteOne({ user: userId });
+};
+
+static updateKeyTokenById = async (id, update) => {
+  return await keyTokenModel.findByIdAndUpdate(id, update, { new: true });
+};
+
+}
 module.exports = KeyTokenService;
