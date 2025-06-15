@@ -21,6 +21,42 @@ const RoleShop = {
 };
 
 class AccessService {
+  static handlerRefreshTokenV2 = async ({ keyStore, user, refreshToken }) => {
+    const { userId, email } = user;
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+      // Delete all refresh tokens used
+      await KeyTokenService.deleteByUserId(user);
+      throw new ForbiddenError("Some thing went wrong, please login again");
+    }
+    if (keyStore.refreshToken !== refreshToken) {
+      throw new UnauthorizedError("Shop not registed");
+    }
+    //check userId
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) {
+      throw new UnauthorizedError("Shop not registed");
+    }
+    // create new token pair
+    const newTokens = await createTokenPair(
+      {
+        user: foundShop._id,
+        email: foundShop.email,
+      },
+      keyStore.publicKey,
+      keyStore.privateKey
+    );
+
+    await keyTokenService.updateKeyTokenById(keyStore._id, {
+      $set: { refreshToken: newTokens.refreshToken },
+      $addToSet: { refreshTokensUsed: refreshToken },
+    });
+
+    return {
+      user: { user, email },
+      newTokens,
+    };
+  };
+
   static handlerRefreshToken = async (refreshToken) => {
     //check xem token nay da duoc su dung chua
     const foundToken = await keyTokenService.findByRefreshTokensUsed(
@@ -33,9 +69,8 @@ class AccessService {
         foundToken.privateKey
       );
 
-
       //xoa tat ca token
-     await KeyTokenService.deleteByUserId(user);
+      await KeyTokenService.deleteByUserId(user);
 
       throw new ForbiddenError("Some thing went wrong, please login again");
     }
@@ -93,7 +128,9 @@ class AccessService {
     }
 
     // step 2: check password is correct?
-
+    if (!password || !foundShop?.password) {
+      throw new BadRequestError("Missing credentials");
+    }
     const match = bcrypt.compare(password, foundShop.password);
 
     if (!match) {
@@ -107,7 +144,7 @@ class AccessService {
     // step 4: generate key token
     const tokens = await createTokenPair(
       {
-        user: foundShop._id,
+        userId: foundShop._id,
         email: foundShop.email,
       },
       publicKey,
