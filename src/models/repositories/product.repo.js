@@ -2,7 +2,7 @@
 
 const { Types } = require("mongoose");
 const { product, clothing, electronic } = require("../product.model");
-
+const {getSelectData,unSelectData} = require("../../utils/index")
 const findAllDraftsForShop = async ({ query, limit, skip }) => {
   return await queryProduct({ query, limit, skip });
 };
@@ -11,15 +11,33 @@ const findAllPublishedForShop = async ({ query, limit, skip }) => {
   return await queryProduct({ query, limit, skip });
 };
 
-const searchProductByUser = async ({keySearch}) => {
-    const regexSearch = new RegExp(keySearch)
-    const results = await product.find({
+const findAllProducts = async ({ limit, sort, page, filter, select }) => {
+  const skip = (page - 1) * limit;
+  const sortBy = sort === "ctime" ? { _id: -1 } : { _id: 1 };
+  const products = await product
+    .find(filter)
+    .sort(sortBy)
+    .skip(skip)
+    .limit(limit)
+    .select(getSelectData(select))
+    .lean();
+  return products;
+};
+
+const searchProductByUser = async ({ keySearch }) => {
+  const regexSearch = new RegExp(keySearch);
+  const results = await product
+    .find(
+      {
         isPublish: true,
-        $text: {$search: regexSearch}},
-        {score: {$meta: 'textScore'}}
-    ).sort({score: {$meta: 'textScore'}})
-    .lean()
-    return results;
+        $text: { $search: regexSearch },
+      },
+      // performs a full-text search using MongoDB’s text index
+      { score: { $meta: "textScore" } }
+    )
+    .sort({ score: { $meta: "textScore" } })
+    .lean();
+  return results;
 };
 
 const publishProductByShop = async ({ product_shop, product_id }) => {
@@ -50,6 +68,12 @@ const unPublishedProductByShop = async ({ product_shop, product_id }) => {
   return 1;
 };
 
+const findProduct = async ({product_id,unSelect}) => {
+  return await product.findById(product_id)
+  .select(unSelectData(unSelect))
+  .lean()
+}
+
 const queryProduct = async ({ query, limit, skip }) => {
   return await product
     .find(query)
@@ -67,5 +91,7 @@ module.exports = {
   publishProductByShop,
   findAllPublishedForShop,
   unPublishedProductByShop,
-  searchProductByUser
+  searchProductByUser,
+  findAllProducts,
+  findProduct
 };

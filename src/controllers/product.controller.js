@@ -18,24 +18,20 @@ class ProductController {
   publishProduct = async (req, res, next) => {
     SuccessResponse.create({
       message: "Publish product successfully",
-      metadata: await ProductService.publishProductByShop(
-        {
-          product_id: req.params.id,
-          product_shop: req.user.userId,
-        }
-      ),
+      metadata: await ProductService.publishProductByShop({
+        product_id: req.params.id,
+        product_shop: req.user.userId,
+      }),
     }).send(res);
   };
 
-   unPublishProduct = async (req, res, next) => {
+  unPublishProduct = async (req, res, next) => {
     SuccessResponse.create({
       message: "unPublish product successfully",
-      metadata: await ProductService.unPublishedProductForShop(
-        {
-          product_id: req.params.id,
-          product_shop: req.user.userId,
-        }
-      ),
+      metadata: await ProductService.unPublishedProductForShop({
+        product_id: req.params.id,
+        product_shop: req.user.userId,
+      }),
     }).send(res);
   };
   //QUERY
@@ -57,10 +53,26 @@ class ProductController {
     }).send(res);
   };
 
-    getListSearchProduct = async (req, res, next) => {
+  getListSearchProduct = async (req, res, next) => {
     SuccessResponse.create({
       message: "Get list search product!",
       metadata: await ProductService.searchProduct(req.params),
+    }).send(res);
+  };
+
+  getAllProducts = async (req, res, next) => {
+    SuccessResponse.create({
+      message: "Get all products successfully!",
+      metadata: await ProductService.findAllProducts(req.query),
+    }).send(res);
+  };
+
+  findProduct = async (req, res, next) => {
+    SuccessResponse.create({
+      message: "Get product!",
+      metadata: await ProductService.findProduct({
+        product_id: req.params.product_id
+      }),
     }).send(res);
   };
   //END QUERY//
