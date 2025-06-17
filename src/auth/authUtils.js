@@ -87,7 +87,6 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
   if (!keyStore) {
     throw new NotFoundError("KeyStore not found for this user");
   }
-  console.log(req.headers);
 
   //3
   const refreshToken = req.headers[HEADER.REFRESH_TOKEN];

@@ -4,12 +4,20 @@ const express = require('express')
 const productController = require('../../controllers/product.controller')
 const router = express.Router()
 const {asyncHandler} = require('../../helpers/asyncHandler')
-const {authentication} = require('../../auth/authUtils')
+const {authenticationV2} = require('../../auth/authUtils')
 
+//search product
+router.get('/search/:keySearch',asyncHandler(productController.getListSearchProduct))
 
 //authentication
-router.use(authentication)
+router.use(authenticationV2)
 
+// Create, Publish, Unpublish product
 router.post('', asyncHandler(productController.createProduct))
+router.post('/publish/:id',asyncHandler(productController.publishProduct))
+router.post('/unpublish/:id',asyncHandler(productController.unPublishProduct))
 
+// Query
+router.get('/draft/all', asyncHandler(productController.getAllDraftsForShop))
+router.get('/published/all', asyncHandler(productController.getAllPublishedForShop))
 module.exports = router

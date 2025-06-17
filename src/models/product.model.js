@@ -74,12 +74,16 @@ const productSchema = new Schema(
   }
 );
 
+//create index for search
+productSchema.index({product_name: 'text', product_description: 'text'})
+
 // Document middleware to set product_slug before saving
 // This middleware runs before the document is saved to the database
 productSchema.pre('save', function (next) {
   this.product_slug = slugify(this.product_name, {
     lower: true,
   });
+  next();
 })
 
 // define product type = electronic

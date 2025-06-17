@@ -31,8 +31,6 @@ const permissions = (permission) => {
       throw new UnauthorizedError("Unauthorized Error: No permissions found");
     }
 
-    console.log("permissions", req.objKey.permissions);
-
     if (!req.objKey.permissions.includes(permission)) {
       throw new UnauthorizedError("Unauthorized Error: No permissions found");
     }
