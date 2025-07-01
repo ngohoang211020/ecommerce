@@ -16,7 +16,7 @@ class ProductController {
   };
 
     //update product
-    updateProduct = async (req, res, next) => {
+  updateProduct = async (req, res, next) => {
     SuccessResponse.create({
       message: "Update product successfully",
       metadata: await ProductService.updateProduct(req.body.product_type,req.params.productId,{

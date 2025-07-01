@@ -43,7 +43,7 @@ class ProductFactory {
       throw new BadRequestError(`Product type ${type} is not registered`);
     }
 
-    return new ProductClass(removeUndefinedObject(payload)).updateProduct(
+    return new ProductClass(payload).updateProduct(
       productId
     );
   }
@@ -150,17 +150,12 @@ class Clothing extends Product {
   }
 
   async updateProduct(productId) {
-    const objectParams = this;
-    let cleanedAttributes = objectParams.product_attributes
-      ? removeUndefinedObject(
-          updateNestedObjectParser(objectParams.product_attributes)
-        )
-      : undefined;
-    console.log(cleanedAttributes)
-    if (cleanedAttributes && Object.keys(cleanedAttributes).length > 0) {
+    const objectParams = removeUndefinedObject(this)
+    
+    if (objectParams.product_attributes) {
       await updateProductById({
         productId,
-        bodyUpdate: cleanedAttributes,
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
         model: clothing,
         isNew: true,
       });
@@ -196,13 +191,13 @@ class Electronics extends Product {
     if (objectParams.product_attributes) {
       await updateProductById({
         productId,
-        bodyUpdate: updateNestedObjectParser(objectParams),
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
         model: electronic, // <-- use the correct model
         isNew: true,
       });
     }
 
-    const updateProduct = super.updateProduct(productId, objectParams);
+    const updateProduct = super.updateProduct(productId, updateNestedObjectParser(objectParams));
     return updateProduct;
   }
 }

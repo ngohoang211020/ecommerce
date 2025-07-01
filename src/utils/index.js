@@ -26,20 +26,17 @@ const removeUndefinedObject = obj => {
     return obj
 }
 
-const updateNestedObjectParser = obj => {
-    const final = {}
-    Object.keys(obj).forEach( k => {
-        if(typeof obj[k] === 'Object' && !Array.isArray(obj[k])){
-            const response = updateNestedObjectParser(obj[k])
-            Object.keys(response).forEach(a => {
-                final[`${k}.${a}`] = res[a]
-            })
-        } else {
-            final[k] = obj[k]
-        }
-    })
-    return final
+function updateNestedObjectParser(obj, parentKey = '', result = {}) {
+  for (const key in obj) {
+    if (obj[key] !== null && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+      updateNestedObjectParser(obj[key], parentKey ? `${parentKey}.${key}` : key, result);
+    } else {
+      result[parentKey ? `${parentKey}.${key}` : key] = obj[key];
+    }
+  }
+  return result;
 }
+
 module.exports = {
     getInfoData,
     getSelectData,

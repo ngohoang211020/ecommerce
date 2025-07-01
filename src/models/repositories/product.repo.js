@@ -94,7 +94,7 @@ const updateProductById = async ({
   model,
   isNew = true 
 }) => {
-  return await model.findByIdAndUpdate(productId, bodyUpdate, {
+  return await model.findByIdAndUpdate(productId, { $set: bodyUpdate }, {
     new: isNew
   })
 }
