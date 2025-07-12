@@ -26,7 +26,6 @@ const discountSchema = new Schema({
     timestamps: true,
     collection: COLLECTION_NAME
 })
-
 //export the model
 module.exports = {
   discount: model(DOCUMENT_NAME, discountSchema)
