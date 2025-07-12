@@ -2,7 +2,11 @@
 
 const { Types } = require("mongoose");
 const { product, clothing, electronic } = require("../product.model");
-const {getSelectData,unSelectData} = require("../../utils/index")
+const {
+  getSelectData,
+  unSelectData,
+  convertToObjectIdMongodb,
+} = require("../../utils/index");
 const findAllDraftsForShop = async ({ query, limit, skip }) => {
   return await queryProduct({ query, limit, skip });
 };
@@ -68,11 +72,12 @@ const unPublishedProductByShop = async ({ product_shop, product_id }) => {
   return 1;
 };
 
-const findProduct = async ({product_id,unSelect}) => {
-  return await product.findById(product_id)
-  .select(unSelectData(unSelect))
-  .lean()
-}
+const findProduct = async ({ product_id, unSelect }) => {
+  return await product
+    .findById(product_id)
+    .select(unSelectData(unSelect))
+    .lean();
+};
 
 const queryProduct = async ({ query, limit, skip }) => {
   return await product
@@ -87,17 +92,26 @@ const queryProduct = async ({ query, limit, skip }) => {
     .exec();
 };
 
-
 const updateProductById = async ({
   productId,
   bodyUpdate,
   model,
-  isNew = true 
+  isNew = true,
 }) => {
-  return await model.findByIdAndUpdate(productId, { $set: bodyUpdate }, {
-    new: isNew
-  })
-}
+  return await model.findByIdAndUpdate(
+    productId,
+    { $set: bodyUpdate },
+    {
+      new: isNew,
+    }
+  );
+};
+
+const getProductById = async ({ productId}) => {
+  return await product
+    .findOne({ _id: convertToObjectIdMongodb(productId) })
+    .lean();
+};
 module.exports = {
   findAllDraftsForShop,
   publishProductByShop,
@@ -106,5 +120,6 @@ module.exports = {
   searchProductByUser,
   findAllProducts,
   findProduct,
-  updateProductById
+  updateProductById,
+  getProductById,
 };
