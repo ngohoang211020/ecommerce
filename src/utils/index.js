@@ -37,10 +37,13 @@ function updateNestedObjectParser(obj, parentKey = '', result = {}) {
   return result;
 }
 
+const convertToObjectIdMongodb = id => new Types.ObjectId(id)
+
 module.exports = {
     getInfoData,
     getSelectData,
     unSelectData,
     removeUndefinedObject,
-    updateNestedObjectParser
+    updateNestedObjectParser,
+    convertToObjectIdMongodb
 }
