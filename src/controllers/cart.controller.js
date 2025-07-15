@@ -16,6 +16,7 @@ class CartController {
     * the cart successfully
   */  
   addToCart = async (req, res, next) => {
+    console.log("Add to cart request body: ", req.body);
     new SuccessResponse({
       message: "Add to cart successfully",
       metadata: await CartService.addProductToCart({...req.body}),

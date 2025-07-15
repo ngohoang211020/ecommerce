@@ -22,8 +22,8 @@ class CartService {
     const query = { cart_userId: userId, cart_state: "active" };
     const updateOrInsert = {
       $addToSet: { cart_products: product },
-    }
-    const  options = { upsert: true, new: true }
+    };
+    const options = { upsert: true, new: true };
 
     return await cart.findOneAndUpdate(query, updateOrInsert, options);
   }
@@ -53,6 +53,19 @@ class CartService {
     if (!userCart) {
       return await CartService.createCart({ userId, product });
     }
+    // Check if product already exists in cart
+    const exists = userCart.cart_products.some(
+      (item) => item.productId.toString() === product.productId.toString()
+    );
+
+    if (!exists) {
+      // Add new product to cart
+      userCart.cart_products.push(product);
+      console.log("userCart.cart_products", userCart.cart_products);
+      return await userCart.save();
+    }
+
+    console.log("userCart.cart_products", userCart.cart_products);
 
     if (!userCart.cart_products.length) {
       userCart.cart_products = product;
@@ -78,12 +91,16 @@ class CartService {
     ]
   */
   static async addProductToCartV2({ userId, shop_order_ids }) {
-
     const { productId, quantity, old_quantity } =
       shop_order_ids[0]?.item_products[0];
 
-      console.log("productId, quantity, old_quantity", productId, quantity, old_quantity);
-      // check product exists in cart
+    console.log(
+      "productId, quantity, old_quantity",
+      productId,
+      quantity,
+      old_quantity
+    );
+    // check product exists in cart
     const foundProduct = await getProductById({ productId });
     if (!foundProduct) {
       throw new NotFoundError(`Product not found`);
@@ -126,4 +143,4 @@ class CartService {
   }
 }
 
-module.exports = CartService
+module.exports = CartService;
