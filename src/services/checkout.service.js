@@ -4,6 +4,8 @@ const { findCartById } = require("../models/repositories/cart.repo");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 const { checkProductByServer } = require("../models/repositories/product.repo");
 const { getDiscountAmount } = require("../services/discount.service");
+const { order } = require("../models/order.model");
+const { acquireLock, releaseLock } = require("./redis.service");
 class CheckoutService {
   //login and without login
   /*
@@ -71,7 +73,7 @@ class CheckoutService {
       if (!checkProductServerArr[0])
         throw new BadRequestError("order wrong!!!");
       // calculate total price for each shop
-  
+
       const checkoutPrice = checkProductServerArr.reduce((acc, product) => {
         return acc + product.price * product.quantity;
       }, 0); // <-- initial value 0
@@ -114,6 +116,69 @@ class CheckoutService {
       checkout_order,
     };
   }
+
+  static async orderByUser({
+    shop_order_ids,
+    cartId,
+    userId,
+    user_address = {},
+    user_payment = {},
+  }) {
+    const { shop_order_ids_new, checkout_order } =
+      await CheckoutService.checkoutReview({
+        cartId,
+        userID,
+        shop_order_ids,
+      });
+
+    const products = shop_order_ids_new.flatMap((order) => order.item_products);
+    console.log(`[1]:`, products);
+    const acquireProduct = [];
+    for (let i = 0; i < products.length; i++) {
+      const { productId, quantity } = products[i];
+      const keyLock = await acquireLock(productId, quantity, cartId);
+      acquireProduct.push(keyLock ? true : false);
+      if (keyLock) {
+        await releaseLock(keyLock);
+      }
+    }
+
+    //check if co mot san pham het hang trong kho thi
+    if (acquireProduct.includes(false)) {
+      throw new BadRequestError(
+        "Mot so san pham da duoc cap nhat, vui long quay lai gio hang"
+      );
+    }
+
+    // const newOrder = await order.cre
+    const newOrder = await order.create({
+      order_userId: userId,
+      order_checkout: checkout_order,
+      order_shipping: user_address,
+      order_payment: user_payment,
+      order_products: shop_order_ids_new,
+    });
+
+    // truong hop insert thanh cong thi remove product co trong cart
+    if (newOrder) {
+    }
+
+    return newOrder;
+  }
+
+  /*
+  1. Query Order [Users]
+  */
+  static async getOrdersByUser() {}
+
+  // [USER]
+  static async getOneOrderByUser(){}
+
+  // [USER]
+  static async cancelOrderByUser(){}
+
+  // [SHOP,ADMIN]
+  static async updateOrderStatusByShop(){}
 }
 
 module.exports = CheckoutService;
